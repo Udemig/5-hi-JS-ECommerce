@@ -3,6 +3,8 @@ const productList = document.querySelector('.products');
 const modal = document.querySelector('.modal-wrapper');
 const openBtn = document.querySelector('#open-btn');
 const closeBtn = document.querySelector('#close-btn');
+const modalList = document.querySelector('.modal-list');
+const modalInfo = document.querySelector('#modal-info');
 
 document.addEventListener('DOMContentLoaded', () => {
   // callback > içerisinde farklı fonksiyonlar çalıştırır
@@ -65,6 +67,7 @@ function fetchProduct() {
 
 // Sepet
 let basket = [];
+let total = 0;
 
 // sepete ekleme işlemi
 function addToBasket(product) {
@@ -78,17 +81,64 @@ function addToBasket(product) {
     // eğer elemandan sepette bulunmadıysa sepete ekle
     basket.push(product);
   }
-  console.log(basket);
 }
 
 // Açma ve Kapatma
 
 openBtn.addEventListener('click', () => {
   modal.classList.add('active');
+  // sepetin içine ürünleri listeleme
+  addList();
+  // toplam bilgisini güncelleme
+  modalInfo.innerText = total;
 });
 
 closeBtn.addEventListener('click', () => {
   modal.classList.remove('active');
+  // sepeti kaptınca içini temizleme
+  modalList.innerHTML = '';
+  // toplam değerini sıfırlama
+  total = 0;
+});
+
+// sepete listeleme fonksiyonu
+function addList() {
+  basket.forEach((product) => {
+    console.log(product);
+    // sepet dizisindeki her obje için div oluştur
+    const listItem = document.createElement('div');
+    // bunlara class ekle
+    listItem.classList.add('list-item');
+    // içeriğini değiştir
+    listItem.innerHTML = `
+              <img src="${product.img}" />
+              <h2>${product.title}</h2>
+              <h2 class="price">${product.price}  $</h2>
+              <p>Miktar: ${product.amount}</p>
+              <button id="del" onclick="deleteItem({id:${product.id},price:${product.price} ,amount: ${product.amount}})">Sil</button>
+    `;
+    // elemanı htmldeki listeye gönderme
+    modalList.appendChild(listItem);
+
+    // toplam değişkenini güncelleme
+    total += product.price * product.amount;
+  });
+}
+
+// sepet dizisinden silme fonksiyonu
+function deleteItem(deletingItem) {
+  basket = basket.filter((i) => i.id !== deletingItem.id);
+  // silinen elemanın fiyatını total'den çıkartma
+  total -= deletingItem.price * deletingItem.amount;
+
+  modalInfo.innerText = total;
+}
+
+// silinen elemanı htmlden kaldırma
+modalList.addEventListener('click', (e) => {
+  if (e.target.id === 'del') {
+    e.target.parentElement.remove();
+  }
 });
 
 // eğer dışarıya tıklanırsa kapatma
